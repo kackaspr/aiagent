@@ -1,8 +1,10 @@
 import os
 import argparse
+
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
+
 
 def main():
     parser = argparse.ArgumentParser(description = "AI Agent to helping with something...")
@@ -16,7 +18,6 @@ def main():
         raise RuntimeError("GEMINI_API_KEY environment variable not found")
     
     client = genai.Client(api_key = api_key)
-
     messages = [types.Content(role = "user", parts = [types.Part(text = args.user_prompt)])]
     
     try:
