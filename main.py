@@ -6,7 +6,7 @@ from google import genai
 from google.genai import types
 
 from prompts import system_prompt
-from call_function import available_functions
+from call_function import available_functions, call_function
 
 def main():
     parser = argparse.ArgumentParser(description = "AI Agent to helping with something...")
@@ -42,11 +42,23 @@ def main():
         print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
 
     print("Response:")
-    if response.function_calls:
+    if not response.function_calls:
+        print(response.text)
+    else:
+        function_results_list = []
         for function_call in response.function_calls:
             print(f"Calling function: {function_call.name}({function_call.args})")
-    else:
-        print(response.text)
+            function_call_result = call_function(function_call, args.verbose)
+            if not function_call_result.parts:
+                raise Exception('Function result incomplete: "parts" field empty')
+            if not function_call_result.parts[0].function_response:
+                raise Exception('Function result incomplete: "parts[0].function_response" field empty')
+            if not function_call_result.parts[0].function_response.response:
+                raise Exception('Function result incomplete: "pparts[0].function_response.response" field empty')
+            function_results_list.append(function_call_result.parts[0])
+            if args.verbose:
+                print(f"-> {function_call_result.parts[0].function_response.response}")
+
 
 if __name__ == "__main__":
     main()
